@@ -71,12 +71,23 @@ RUN pip3 install --pre \
         cython \
         statsmodels \
         scikit-learn \
+        asciitree \        
         && \
-    python3 -m ipykernel.kernelspec
+    pip3 install --pre --upgrade git+git://github.com/fchollet/keras.git@master && \
+    python3.5 -m ipykernel.kernelspec
 
 
     # messes up apt installs later
     # rm -rf /var/lib/apt/lists/*
+RUN mkdir ~/.keras/ && echo '{"epsilon": 1e-07, "floatx": "float32", "backend": "tensorflow"}' > ~/.keras/keras.json
+
+#####
+#make OpenCV (kind of a pain)
+RUN git clone https://github.com/Itseez/opencv.git && \
+    cd opencv && mkdir cv_bin && cd cv_bin && \
+    cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local .. && \
+    make -j4 && make install
+     
 
 #######
 # Build from Source with Bazel
@@ -86,7 +97,7 @@ RUN echo "build --spawn_strategy=standalone --genrule_strategy=standalone" \
     >>/root/.bazelrc
 
 ENV BAZELRC /root/.bazelrc
-ENV BAZEL_VERSION 0.1.5
+ENV BAZEL_VERSION 0.2.0
 
 #dying because of "no such package '@jpeg_archive//" why???
 #worked before with grahama
